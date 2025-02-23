@@ -40,8 +40,10 @@ const resolver = {
 
     getAllProducts: async () => {
       try {
+        console.log("getting...")
         const res = await axios.get(`${PRODUCT_SERVICE_URL}/product/all`);
-        const products = res.data;
+      
+        const products = res.data.products;
         return products.map((product) => ({
           id: product._id,
           name: product.name,
@@ -57,7 +59,8 @@ const resolver = {
     getProductById: async (_, { id }) => {
       try {
         const res = await axios.get(`${PRODUCT_SERVICE_URL}/product/${id}`);
-        const product = res.data;
+        console.log(res.data);
+        const product = res.data.product;
         return {
           id: product._id,
           name: product.name,
@@ -145,7 +148,7 @@ const resolver = {
     },
   },
 
-  Mutations: {
+  Mutation: {
     registerUser: async (_, { name, email, password, preferences }) => {
       try {
         const res = await axios.post(`${USER_SERVICE_URL}/user/register`, {
@@ -154,7 +157,12 @@ const resolver = {
           password,
           preferences,
         });
-        return res.data;
+        return {
+          id: res.data._id,
+          name: res.data.name,
+          email: res.data.email,
+          preferences: res.data.preferences,
+        };
       } catch (error) {
         throw new Error("User registration failed");
       }
@@ -165,23 +173,34 @@ const resolver = {
           email,
           password,
         });
-        const data =  res.data;
+        const data = res.data;
 
         return {
-          token: data.token
-        }
+          token: data.token,
+        };
       } catch (error) {
         throw new Error("Login failed");
       }
     },
     updateUserPreferences: async (_, { id, preferences }) => {
       try {
-        const res = await axios.put(
-          `${USER_SERVICE_URL}/user/preferences/${id}`,
-          { preferences }
-        );
-        return res.data;
+        console.log("Updating preferences...");
+        const res = await axios.put(`${USER_SERVICE_URL}/user/${id}`, {
+          preferences,
+        });
+
+        return {
+          id: res.data.updatedUser._id,
+          name: res.data.updatedUser.name, 
+          email: res.data.updatedUser.email,
+          preferences: res.data.updatedUser.preferences,
+        };
+
       } catch (error) {
+        console.error(
+          "Error updating preferences:",
+          error.response?.data || error.message
+        );
         throw new Error("Failed to update preferences");
       }
     },
@@ -189,48 +208,90 @@ const resolver = {
     createProduct: async (_, { name, price, stock, category, description }) => {
       try {
         const res = await axios.post(`${PRODUCT_SERVICE_URL}/product/create`, {
-          name, price, stock, category, description
+          name,
+          price,
+          stock,
+          category,
+          description,
         });
-        return res.data.product;
+        return {
+          id: res.data.product._id,
+          name: res.data.product.name,
+          price: res.data.product.price,
+          stock: res.data.product.stock,
+          category: res.data.product.category,
+          description: res.data.product.description,
+        }
       } catch (error) {
         throw new Error("Product creation failed");
       }
     },
-    updateProduct: async (_, { id, name, price, stock, category, description }) => {
+    updateProduct: async (
+      _,
+      { id, name, price, stock, category, description }
+    ) => {
       try {
         const res = await axios.put(`${PRODUCT_SERVICE_URL}/product/${id}`, {
-          name, price, stock, category, description
+          name,
+          price,
+          stock,
+          category,
+          description,
         });
-        return res.data.product;
+        return {
+          id: res.data.product._id,
+          name: res.data.product.name,
+          price: res.data.product.price,
+          stock: res.data.product.stock,
+          category: res.data.product.category,
+          description: res.data.product.description,
+        }
       } catch (error) {
         throw new Error("Product update failed");
       }
     },
     deleteProduct: async (_, { id }) => {
       try {
-        await axios.delete(`${PRODUCT_SERVICE_URL}/products/${id}`);
+        await axios.delete(`${PRODUCT_SERVICE_URL}/product/${id}`);
         return "Product deleted successfully";
       } catch (error) {
         throw new Error("Failed to delete product");
       }
     },
 
-    createOrder: async (_, { userId, products}) => {
+    createOrder: async (_, { userId, products }) => {
       try {
         const res = await axios.post(`${ORDER_SERVICE_URL}/order/create`, {
-          userId, products
+          userId,
+          products,
         });
-        return res.data.newOrder;
+
+        return {
+          id: res.data.newOrder._id,
+          userId: res.data.newOrder.userId,
+          products: res.data.newOrder.products.map((product) => ({
+            productId: product.productId,
+            quantity: product.quantity,
+          })),
+        }
       } catch (error) {
         throw new Error("Order creation failed");
       }
     },
-    updateOrder: async (_, { id, products}) => {
+    updateOrder: async (_, { id, products }) => {
       try {
         const res = await axios.put(`${ORDER_SERVICE_URL}/order/${id}`, {
-          products
+          products,
         });
-        return res.data;
+        console.log(res.data);  
+        return {
+          id: res.data.order._id,
+          userId: res.data.order.userId,
+          products: res.data.order.products.map((product) => ({
+            productId: product.productId,
+            quantity: product.quantity,
+          })),
+        };
       } catch (error) {
         throw new Error("Order update failed");
       }
@@ -246,21 +307,43 @@ const resolver = {
 
     createNotification: async (_, { userId, userEmail, type, content }) => {
       try {
-        const res = await axios.post(`${NOTIFICATION_SERVICE_URL}/notification/create`, {
-          userId, userEmail, type, content
-        });
-        return res.data;
+        console.log("Creating notification...");
+
+
+        const res = await axios.post(
+          `${NOTIFICATION_SERVICE_URL}/notification/create`,
+          {
+            userId,
+            userEmail,
+            type,
+            content,
+          }
+        );
+        console.log(res.data);
+        return {
+          id: res.data.notification._id,
+          userId: res.data.notification.userId,
+          userEmail: res.data.notification.userEmail,
+          type: res.data.notification.type,
+          content: res.data.notification.content,
+          sendAt: res.data.notification.sendAt,
+          read: res.data.notification.read,
+        }
       } catch (error) {
         throw new Error("Notification creation failed");
       }
     },
     markAsRead: async (_, { notificationId }) => {
       try {
-        const res = await axios.put(`${NOTIFICATION_SERVICE_URL}/notification/read/${notificationId}`);
+        const res = await axios.put(
+          `${NOTIFICATION_SERVICE_URL}/notification/read/${notificationId}`
+        );
         return res.data;
       } catch (error) {
         throw new Error("Failed to mark notification as read");
       }
-    }
+    },
   },
 };
+
+module.exports = resolver;

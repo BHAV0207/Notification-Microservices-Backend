@@ -52,7 +52,7 @@ router.put("/:id", async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, {
       $set: req.body,
     });
-    res.status(200).json("Order has been updated");
+    res.status(200).json({message :"Order has been updated" , order});
   } catch (err) {
     res.status(500).json(err);
   }

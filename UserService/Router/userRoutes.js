@@ -66,7 +66,7 @@ router.get("/all", async (req, res) => {
   }
 });
 
-router.get("/:id",authMiddleware, async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     res.json(user);
@@ -75,11 +75,13 @@ router.get("/:id",authMiddleware, async (req, res) => {
   }
 });
 
-router.put("/:id",authMiddleware, async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
+    
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
+    
     res.json({message : "User updated", updatedUser });
   } catch (err) {
     res.status(400).json({ message: err });
