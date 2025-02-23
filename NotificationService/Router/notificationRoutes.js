@@ -4,21 +4,18 @@ const router = express.Router();
 const sendMail = require("../mailer");
 const Notification = require("../Models/notificationModel");
 
-// ✅ Create a notification and send an email
 router.post("/create", async (req, res) => {
   try {
     const { userId, userEmail, type, content } = req.body;
 
-    // Ensure required fields are present
+
     if (!userId || !userEmail || !type || !content) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Save notification in the database
     const notification = new Notification({ userId, userEmail, type, content });
     await notification.save();
 
-    // Send email notification
     await sendMail(userEmail, `New ${type} Notification`, content);
 
     res.status(201).json({ message: "Notification stored & email sent", notification });
@@ -27,7 +24,6 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// ✅ Get all notifications for a specific user
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -39,7 +35,6 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// ✅ Get unread notifications for a specific user
 router.get("/unread/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -51,7 +46,7 @@ router.get("/unread/:userId", async (req, res) => {
   }
 });
 
-// ✅ Mark a notification as read
+
 router.put("/read/:notificationId", async (req, res) => {
   const { notificationId } = req.params;
 
