@@ -1,10 +1,10 @@
 const axios = require("axios");
 const { response } = require("express");
 
-const USER_SERVICE_URL = "http://localhost:8000";
-const PRODUCT_SERVICE_URL = "http://localhost:8001";
-const ORDER_SERVICE_URL = "http://localhost:8002";
-const NOTIFICATION_SERVICE_URL = "http://localhost:8003";
+const USER_SERVICE_URL = "http://user-service:8000";
+const PRODUCT_SERVICE_URL = "http://product-service:8001";
+const ORDER_SERVICE_URL = "http://order-service:8002";
+const NOTIFICATION_SERVICE_URL = "http://notification-service:8003";
 
 const resolver = {
   Query: {
@@ -40,9 +40,9 @@ const resolver = {
 
     getAllProducts: async () => {
       try {
-        console.log("getting...")
+        console.log("getting...");
         const res = await axios.get(`${PRODUCT_SERVICE_URL}/product/all`);
-      
+
         const products = res.data.products;
         return products.map((product) => ({
           id: product._id,
@@ -191,11 +191,10 @@ const resolver = {
 
         return {
           id: res.data.updatedUser._id,
-          name: res.data.updatedUser.name, 
+          name: res.data.updatedUser.name,
           email: res.data.updatedUser.email,
           preferences: res.data.updatedUser.preferences,
         };
-
       } catch (error) {
         console.error(
           "Error updating preferences:",
@@ -221,7 +220,7 @@ const resolver = {
           stock: res.data.product.stock,
           category: res.data.product.category,
           description: res.data.product.description,
-        }
+        };
       } catch (error) {
         throw new Error("Product creation failed");
       }
@@ -245,7 +244,7 @@ const resolver = {
           stock: res.data.product.stock,
           category: res.data.product.category,
           description: res.data.product.description,
-        }
+        };
       } catch (error) {
         throw new Error("Product update failed");
       }
@@ -273,7 +272,7 @@ const resolver = {
             productId: product.productId,
             quantity: product.quantity,
           })),
-        }
+        };
       } catch (error) {
         throw new Error("Order creation failed");
       }
@@ -283,7 +282,7 @@ const resolver = {
         const res = await axios.put(`${ORDER_SERVICE_URL}/order/${id}`, {
           products,
         });
-        console.log(res.data);  
+        console.log(res.data);
         return {
           id: res.data.order._id,
           userId: res.data.order.userId,
@@ -309,7 +308,6 @@ const resolver = {
       try {
         console.log("Creating notification...");
 
-
         const res = await axios.post(
           `${NOTIFICATION_SERVICE_URL}/notification/create`,
           {
@@ -328,7 +326,7 @@ const resolver = {
           content: res.data.notification.content,
           sendAt: res.data.notification.sendAt,
           read: res.data.notification.read,
-        }
+        };
       } catch (error) {
         throw new Error("Notification creation failed");
       }
