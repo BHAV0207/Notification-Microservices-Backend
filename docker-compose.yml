@@ -20,7 +20,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OOFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     networks:
@@ -50,6 +50,7 @@ services:
     depends_on:
       - kafka
       - redis
+      
     networks:
       - backend
 
@@ -95,6 +96,8 @@ services:
       KAFKA_BROKER: "kafka:9092"
       REDIS_HOST: "redis"
       REDIS_PORT: 6379
+    env_file:
+      - ./NotificationService/.env
     depends_on:
       - kafka
       - redis

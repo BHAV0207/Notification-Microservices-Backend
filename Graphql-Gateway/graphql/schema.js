@@ -5,16 +5,10 @@ const typeDefs = gql`
     id: ID!
     userId: String!
     userEmail: String!
-    type: NotificationType!
+    type: String!
     content: String!
     sendAt: String!
     read: Boolean!
-  }
-
-  enum NotificationType {
-    PROMOTION
-    ORDER_UPDATE
-    RECOMMENDATION
   }
 
   type User {
@@ -84,7 +78,7 @@ const typeDefs = gql`
     createNotification(
       userId: String!
       userEmail: String!
-      type: NotificationType!
+      type: String!
       content: String!
     ): Notification!
 
