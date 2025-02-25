@@ -1,17 +1,29 @@
 const express = require("express");
 const sendMail = require("../mailer");
 const Notification = require("../Models/notificationModel");
-
+const redis = require("../redisClient");
 const router = express.Router();
 
 // Kafka Event Handler
 const handleKafkaEvent = async (topic, event) => {
+
   try {
     let content = "";
     if (topic === "user_registered") {
       content = `Welcome ${event.name}! Your account has been successfully registered.`;
+
+      const userPreferences = event.preferences || { order_updates: false };
+      await redis.setex(`user:preferences`, 86400, JSON.stringify(userPreferences));
+      await redis.setex(`user:email`, 86400, JSON.stringify(event.email));
+
     } else if (topic === "user_logged_in") {
       content = `Hello ${event.email}, you just logged in. If this wasn't you, please secure your account.`;
+      const userPreferences = event.preferences || { order_updates: false };
+      await redis.setex(`user:preferences`, 86400, JSON.stringify(userPreferences));
+      await redis.setex(`user:email`, 86400, JSON.stringify(event.email));
+    }
+    else if(topic === "order_created") {
+      content = `New order created with ID: ${event.orderId} by user ${event.userId}`;
     }
 
     if (content) {
