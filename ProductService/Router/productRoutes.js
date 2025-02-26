@@ -1,6 +1,39 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../Models/productModels");
+const {connectConsumer} = require("../kafka");
+const { producer } = require("../kafka");
+const redis = require("../redisClient");
+
+
+connectConsumer("order_created", async (message) => {
+  try {
+    const orderData = JSON.parse(message);
+    console.log(`Product Service: Received Order -`, orderData);
+
+    for (const item of orderData.products) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        if (product.stock >= item.quantity) {
+          product.stock -= item.quantity;
+          await product.save();
+
+          // Update stock in Redis
+          await redis.set(`product:${item.productId}:stock`, product.stock);
+
+          console.log(` Updated stock for product ${item.productId}: New stock is ${product.stock}`);
+        } else {
+          console.error(` Insufficient stock for product ${item.productId}`);
+        }
+      } else {
+        console.error(` Product not found: ${item.productId}`);
+      }
+    }
+  } catch (error) {
+    console.error(" Error in Product Service (Kafka Consumer):", error.message);
+  }
+});
+
 
 // ✅ Create a new product
 router.post("/create", async (req, res) => {
@@ -10,9 +43,24 @@ router.post("/create", async (req, res) => {
       name,
       price,
       stock,
-      category, // 🔹 Added category field
+      category,
       description,
     });
+
+    await producer.send({
+      topic: "product_events",
+      messages: [
+        {
+          value: JSON.stringify({
+            productId: product._id,
+            stock: product.stock,
+          }),
+        },
+      ],
+    });
+    console.log(
+      "new kafka event has been fired for product creation" + product._id
+    );
     res.status(201).json({ message: "Product Created", product });
   } catch (err) {
     res.status(400).json({ message: err.message });
