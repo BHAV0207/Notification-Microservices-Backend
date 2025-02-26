@@ -54,13 +54,16 @@ router.post("/create", async (req, res) => {
           value: JSON.stringify({
             productId: product._id,
             stock: product.stock,
+            name: product.name,
+            price: product.price,
+            category: product.category,
+            description: product.description,
           }),
         },
       ],
     });
     console.log(
-      "new kafka event has been fired for product creation" + product._id
-    );
+      "new kafka event has been fired for product creation" + product );
     res.status(201).json({ message: "Product Created", product });
   } catch (err) {
     res.status(400).json({ message: err.message });

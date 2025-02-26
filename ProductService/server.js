@@ -43,6 +43,10 @@ const sendAllProductsToKafka = async () => {
             value: JSON.stringify({
               productId: product._id,
               stock: product.stock,
+              name: product.name,
+              price: product.price,
+              category: product.category,
+              description: product.description,
             }),
           },
         ],
