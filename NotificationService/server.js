@@ -13,6 +13,8 @@ connect();
 
 app.use("/notification", router);
 
+cronJob.sendPromotionalEmails();
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`Notification service running on port ${PORT}`);

@@ -259,12 +259,12 @@ const resolver = {
     },
 
     createOrder: async (_, { userId, products }) => {
+
       try {
         const res = await axios.post(`${ORDER_SERVICE_URL}/order/create`, {
           userId,
           products,
         });
-
         return {
           id: res.data.newOrder._id,
           userId: res.data.newOrder.userId,

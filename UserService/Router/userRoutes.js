@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../MiddleWare/authMiddleware");
 const { connectProducer, producer } = require("../kafka");
+const redis = require("../redisClient");  
 
 connectProducer();
 
@@ -20,6 +21,18 @@ const fireKafkaEvent = async (topic, data) => {
     console.error("Kafka event failed:", err);
   }
 };
+
+
+const updateUserCache = async () => {
+  try {
+    const users = await User.find({}, "_id name email preferences");
+    await redis.setex("allUsers", 86400, JSON.stringify(users)); // Cache for 24 hours
+    console.log("User cache updated in Redis.");
+  } catch (err) {
+    console.error("Error updating Redis cache:", err);
+  }
+};
+
 
 router.post("/register", async (req, res) => {
   const { name, email, password, preferences } = req.body;
@@ -82,6 +95,8 @@ router.post("/login", async (req, res) => {
       preferences: user.preferences,
       timestamp: new Date(),
     });
+
+    await updateUserCache();
 
     res.status(200).json({ token });
   } catch (err) {
