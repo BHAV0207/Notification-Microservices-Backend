@@ -1,6 +1,6 @@
 const cron = require("node-cron");
-const redis = require("../redisClient");
-const sendMail = require("../mailer");
+const redis = require("./redisClient");
+const sendMail = require("./mailer");
 const axios = require("axios");
 
 const USER_SERVICE_URL = "http://user-service:8000";
@@ -12,7 +12,7 @@ const getAllUsers = async () => {
 
     if (!users) {
       console.log("Fetching users from User Service...");
-      const response = await axios.get(`${USER_SERVICE_URL}/all`);
+      const response = await axios.get(`${USER_SERVICE_URL}/user/all`);
       users = response.data;
 
       await redis.setex("allUsers", 86400, JSON.stringify(users)); // Cache for 24 hours
@@ -54,7 +54,7 @@ const sendPromotionalEmails = async () => {
 };
 
 // 🔹 Schedule Cron Job (Runs Every 1 Minute)
-cron.schedule("*/1 * * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
   await sendPromotionalEmails();
 });
 

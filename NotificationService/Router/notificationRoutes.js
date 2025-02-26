@@ -32,7 +32,7 @@ const handleKafkaEvent = async (topic, event) => {
     else if (topic === "order_created") {
       content = `New order created with ID: ${event.orderId} by user ${event.userId}`;
     }
-    
+
 
     if (content) {
       const notification = new Notification({

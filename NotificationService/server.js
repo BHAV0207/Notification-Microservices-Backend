@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const { router, handleKafkaEvent } = require("./Router/notificationRoutes");
 const { connectConsumer } = require("./kafka");
+const cronJob = require("./cronJob");
 
 const dotenv = require("dotenv");
 dotenv.config();
