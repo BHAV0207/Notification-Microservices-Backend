@@ -73,7 +73,7 @@ const typeDefs = gql`
     getProductById(id: ID!): Product
 
     getAllOrders: [Order]
-    getOrderById(id: ID!): Order
+    getOrderById(id: ID!): [Order!]!
   }
 
   type Mutation {

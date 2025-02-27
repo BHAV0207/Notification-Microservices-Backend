@@ -1,25 +1,23 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../Models/orderModels");
-const { producer, connectProducer , connectConsumer} = require("../kafka");
+const { producer, connectProducer, connectConsumer } = require("../kafka");
 const redis = require("../redisClient");
 
 connectProducer();
 
-connectConsumer("product_events" , async (message) => {
-  try{
-
-    const {stock , productId} = JSON.parse(message);
+connectConsumer("product_events", async (message) => {
+  try {
+    const { stock, productId } = JSON.parse(message);
 
     await redis.set(`product:${productId}:stock`, stock);
     console.log(
       `Order Service: Stored product ${productId} with stock ${stock} in Redis`
-    );  
+    );
+  } catch (err) {
+    console.log(err);
   }
-  catch(err){
-    console.log(err) 
-  }
-})
+});
 
 router.post("/create", async (req, res) => {
   try {
@@ -28,41 +26,41 @@ router.post("/create", async (req, res) => {
       return;
     }
 
-//     console.log("Creating new order............................");
-// // 
-//     for (const item of req.body.products) {
-//       console.log(item);
-//       console.log("stock....")
-//       const stock = await redis.get(`product:${item.productId}:stock`);
-//       console.log(stock);
+    //     console.log("Creating new order............................");
+    // //
+    //     for (const item of req.body.products) {
+    //       console.log(item);
+    //       console.log("stock....")
+    //       const stock = await redis.get(`product:${item.productId}:stock`);
+    //       console.log(stock);
 
-//       if (stock === null) {
-//         return res
-//           .status(400)
-//           .json({ message: `Product ${item.productId} not found` });
-//       }
+    //       if (stock === null) {
+    //         return res
+    //           .status(400)
+    //           .json({ message: `Product ${item.productId} not found` });
+    //       }
 
-//       if (parseInt(stock) < item.quantity) {
-//         return res
-//           .status(400)
-//           .json({ message: `Not enough stock for product ${item.productId}` });
-//       }
-//     }
+    //       if (parseInt(stock) < item.quantity) {
+    //         return res
+    //           .status(400)
+    //           .json({ message: `Not enough stock for product ${item.productId}` });
+    //       }
+    //     }
 
-//     for (const item of req.body.products) {
-//       const stock = await redis.get(`product:${item.productId}:stock`);
-//       const newStock = parseInt(stock) - item.quantity;
-//       await redis.set(`product:${item.productId}:stock`, newStock);
+    //     for (const item of req.body.products) {
+    //       const stock = await redis.get(`product:${item.productId}:stock`);
+    //       const newStock = parseInt(stock) - item.quantity;
+    //       await redis.set(`product:${item.productId}:stock`, newStock);
     // }
-// 
+    //
     const newOrder = new Order(req.body);
     await newOrder.save();
 
     console.log("New order created:", newOrder.userId);
-// 
+    //
     // await redis.setEx(`order:${newOrder._id}`, 300, JSON.stringify(newOrder));
     // await redis.del("allOrders");
-// 
+    //
 
     const cachedPreferences = await redis.get(`user:preferences`);
     const userEmail = await redis.get(`user:email`);
@@ -86,7 +84,7 @@ router.post("/create", async (req, res) => {
         ],
       });
 
-      console.log("order created" )
+      console.log("order created");
     } else {
       console.log("User has disabled order updates");
     }
@@ -108,13 +106,35 @@ router.get("/all", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
-    if (order === null) {
-      res.status(404).json("Order not found");
-      return;
+    const { id } = req.params;
+
+    // Find all orders by userId
+    const ordersByUserId = await Order.find({ userId: id });
+
+    console.log(`🔍 Found ${ordersByUserId} orders for user ${id}`);
+
+    if (ordersByUserId.length === 0) {
+      return res.status(404).json({ message: "No orders found for this user" });
     }
-    res.status(200).json(order);
+
+    // Fire Kafka event with all user orders
+    await producer.send({
+      topic: "user_orders",
+      messages: [
+        {
+          value: JSON.stringify({
+            userId: id,
+            orders: ordersByUserId,
+          }),
+        },
+      ],
+    });
+
+    console.log(`📢 Fired Kafka event: user_orders for user ${id}`);
+
+    res.status(200).json(ordersByUserId);
   } catch (err) {
+    console.error("❌ Error fetching user orders:", err);
     res.status(500).json(err);
   }
 });

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const {connectConsumer} = require('./kafka');
 app.use(express.json());
+const {handleKafkaEvent} = require('./Processors/eventsProcessor');
 
 
 
