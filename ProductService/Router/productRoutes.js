@@ -48,7 +48,7 @@ router.post("/create", async (req, res) => {
     });
 
     await producer.send({
-      topic: "product_events",
+      topic: "product-events",
       messages: [
         {
           value: JSON.stringify({

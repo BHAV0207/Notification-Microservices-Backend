@@ -1,23 +1,59 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../Models/orderModels");
-const { producer, connectProducer, connectConsumer } = require("../kafka");
+const { producer, connectProducer} = require("../kafka");
 const redis = require("../redisClient");
 
 connectProducer();
 
-connectConsumer("product_events", async (message) => {
-  try {
-    const { stock, productId } = JSON.parse(message);
+const handleKafkaEvent = async (topic, event) => {
+  try{
+    if(topic === "product_events"){
 
-    await redis.set(`product:${productId}:stock`, stock);
-    console.log(
-      `Order Service: Stored product ${productId} with stock ${stock} in Redis`
-    );
-  } catch (err) {
+      const { stock, productId } = event;
+
+      await redis.set(`product:${productId}:stock`, stock);
+      console.log(
+        `Order Service: Stored product ${productId} with stock ${stock} in Redis`
+      );
+    }
+    else if(topic === "user_logged_in"){
+      try {
+
+        console.log("📩 Received user_logged_in event in the order service ");
+        console.log(event);
+        // console.log(JSON.parse(event));
+        const userId = event.userId;
+    
+        console.log(`📩 Received login event for user: ${userId}`);
+    
+        if (!userId) {
+          console.log("❌ Missing userId in event.");
+          return;
+        }
+  
+        const userOrders = await Order.find({ userId });
+        console.log(userOrders);
+    
+        if (userOrders.length === 0) {
+          console.log(`🛑 No orders found for user ${userId}.`);
+          return;
+        }
+    
+        await producer.send({
+          topic: "user_orders",
+          messages: [{ value: JSON.stringify({ userId, orders: userOrders }) }],
+        });
+    
+        console.log(`✅ Orders for user ${userId} sent to Kafka`);
+      } catch (err) {
+        console.error("❌ Error processing user_logged_in event:", err);
+      }
+    }
+  }catch(err){
     console.log(err);
   }
-});
+}
 
 router.post("/create", async (req, res) => {
   try {
@@ -169,4 +205,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = {router, handleKafkaEvent};

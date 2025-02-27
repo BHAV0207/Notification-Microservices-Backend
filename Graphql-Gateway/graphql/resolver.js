@@ -93,11 +93,7 @@ const resolver = {
     },
       getOrderById: async (_, { id }) => {
         try {
-          console.log(`Fetching order(s) for ID: ${id}...`);
           const res = await axios.get(`${ORDER_SERVICE_URL}/order/${id}`);
-          
-          console.log("Received response:", JSON.stringify(res.data, null, 2));
-      
           const orders = res.data;
       
           // If it's an array, return all orders for a user

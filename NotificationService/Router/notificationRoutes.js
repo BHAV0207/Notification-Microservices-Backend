@@ -32,6 +32,9 @@ const handleKafkaEvent = async (topic, event) => {
     else if (topic === "order_created") {
       content = `New order created with ID: ${event.orderId} by user ${event.userId}`;
     }
+    else if(topic === "recommendation_email"){
+      content = `We recommend you to try ${event.product} from ${event.category} category`;
+    }
 
 
     if (content) {

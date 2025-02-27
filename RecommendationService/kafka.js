@@ -16,8 +16,8 @@ const connectProducer = async () => {
 const connectConsumer = async (handler) => {
   await consumer.connect(); 
   await consumer.subscribe({ topic: "user_logged_in", fromBeginning: true });
-  await consumer.subscribe({ topic: "product_events", fromBeginning: true });
-  await consumer.subscribe({ topic: "order_events", fromBeginning: true });
+  await consumer.subscribe({ topic: "product-events", fromBeginning: true });
+  await consumer.subscribe({ topic: "user_orders", fromBeginning: true });
 
   console.log("Subscribed to Kafka topics from recommendations............." );
 

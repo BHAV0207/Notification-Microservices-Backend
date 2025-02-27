@@ -52,7 +52,6 @@ const sendAllProductsToKafka = async () => {
         ],
       });
     }
-
     console.log("📤 All products sent to Kafka on startup.");
   } catch (error) {
     console.error("❌ Error sending products to Kafka:", error);
