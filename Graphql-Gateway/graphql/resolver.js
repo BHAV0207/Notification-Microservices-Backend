@@ -84,6 +84,7 @@ const resolver = {
           products: order.products.map((product) => ({
             productId: product.productId,
             quantity: product.quantity,
+            category: product.category,
           })),
         }));
       } catch (error) {
@@ -100,6 +101,7 @@ const resolver = {
           products: product.products.map((product) => ({
             productId: product.productId,
             quantity: product.quantity,
+            category: product.category,
           })),
         };
       } catch (error) {
@@ -271,6 +273,7 @@ const resolver = {
           products: res.data.newOrder.products.map((product) => ({
             productId: product.productId,
             quantity: product.quantity,
+            category: product.category,
           })),
         };
       } catch (error) {
@@ -289,6 +292,7 @@ const resolver = {
           products: res.data.order.products.map((product) => ({
             productId: product.productId,
             quantity: product.quantity,
+            category: product.category,
           })),
         };
       } catch (error) {

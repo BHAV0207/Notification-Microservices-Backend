@@ -10,6 +10,7 @@ const getAllUsers = async () => {
   try {
     let users = await redis.get("allUsers");
 
+    // console.log("users............", users);
     if (!users) {
       console.log("Fetching users from User Service...");
       const response = await axios.get(`${USER_SERVICE_URL}/user/all`);
@@ -32,8 +33,9 @@ const sendPromotionalEmails = async () => {
   console.log("🚀 Starting promotional email job...");
 
   const users = await getAllUsers();
-
+  // console.log("users............", users);
   for (const user of users) {
+    // console.log("user............", user);
     if (user.preferences?.promotions) {
       const emailContent = `
         Hello ${user.name},  
@@ -53,7 +55,7 @@ const sendPromotionalEmails = async () => {
   console.log("✅ Promotional email job completed.");
 };
 
-// 🔹 Schedule Cron Job (Runs Every 1 Minute)
+// 🔹 Schedule Cron Job (Runs Every 5 Minute)
 cron.schedule("*/5 * * * *", async () => {
   await sendPromotionalEmails();
 });

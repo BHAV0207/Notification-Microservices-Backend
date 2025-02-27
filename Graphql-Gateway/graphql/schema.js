@@ -47,6 +47,7 @@ const typeDefs = gql`
   type ProductInOrder {
     productId: ID!
     quantity: Int!
+    category: String!
   }
 
   type Order {
@@ -58,6 +59,7 @@ const typeDefs = gql`
   input ProductInOrderInput {
     productId: ID!
     quantity: Int!
+    category: String!
   }
 
   type Query {

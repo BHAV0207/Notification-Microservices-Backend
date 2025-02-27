@@ -104,6 +104,22 @@ services:
       - redis
     networks:
       - backend
+  
+  recommendation-service:
+    build:
+      context: ./RecommendationService
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      KAFKA_BROKER: "kafka:9092"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+    depends_on:
+      - kafka
+      - redis
+    networks:
+      - backend
 
   graphql-service:
     build:
