@@ -120,5 +120,4 @@ The User Service publishes the following Kafka events:
 ## Security & Best Practices
 - Uses **bcrypt** to hash passwords before storing them.
 - Implements **JWT authentication** for secure access.
-- Follows **12-factor app principles** for scalable microservices.
 

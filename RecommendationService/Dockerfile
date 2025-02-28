@@ -1,15 +1,15 @@
-FROM node:20-alpine
+  FROM node:20-alpine
 
-RUN apk add --no-cache python3 make g++
+  RUN apk add --no-cache python3 make g++
 
-WORKDIR /app
+  WORKDIR /app
 
-COPY package*.json ./
+  COPY package*.json ./
 
-RUN npm install
+  RUN npm install
 
-COPY . .
+  COPY . .
 
-EXPOSE 8005
+  EXPOSE 8005
 
-CMD ["npm", "start"]
+  CMD ["npm", "start"]
