@@ -13,7 +13,7 @@ const handleKafkaEvent = async (topic, event) => {
         event.preferences.recommendations + "" + " sending preferences "
       );
       if (event.email) {
-        // userPreferences = event.preferences.recommendations;
+        userPreferences = event.preferences.recommendations;
         userEmail = event.email;
         console.log(`User ${userPreferences} logged in`);
       }
