@@ -2,6 +2,11 @@
 
 This is a **Personalized Notification System** for an **E-Commerce Platform**, built using a **microservices architecture**. The system ensures **personalized recommendations**, **order updates**, **promotional notifications**, and more, using **RabbitMQ/Kafka, GraphQL, JWT authentication, and Redis caching**.
 
+## Architecture
+![Screenshot from 2025-02-28 20-37-00](https://github.com/user-attachments/assets/df147ee8-b558-4ad1-a05f-91b97affaa0d)
+
+
+
 ## 📌 Features
 - **User Service**: Handles user registration, authentication, and preference management.
 - **Product Service**: Manages product inventory and availability.
