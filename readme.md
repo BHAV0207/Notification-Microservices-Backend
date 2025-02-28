@@ -1,4 +1,4 @@
-# 🛒 E-Commerce Microservices Project
+# 🛒 E-Commerce Notification Microservices Project
 
 This is a **Personalized Notification System** for an **E-Commerce Platform**, built using a **microservices architecture**. The system ensures **personalized recommendations**, **order updates**, **promotional notifications**, and more, using **RabbitMQ/Kafka, GraphQL, JWT authentication, and Redis caching**.
 
