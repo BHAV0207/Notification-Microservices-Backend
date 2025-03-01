@@ -55,8 +55,8 @@ const sendPromotionalEmails = async () => {
   console.log("✅ Promotional email job completed.");
 };
 
-// 🔹 Schedule Cron Job (Runs Every 5 Minute)
-cron.schedule("*/1 * * * *", async () => {
+// 🔹 Schedule Cron Job (Runs Every 1 day)
+cron.schedule("0 0 * * *", async () => {
   await sendPromotionalEmails();
 });
 

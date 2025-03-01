@@ -9,7 +9,7 @@ dotenv.config();
 async function startApolloServer() {
   const app = express();
 
-  const server = new ApolloServer({ typeDefs, resolvers });
+  const server = new ApolloServer({ typeDefs, resolvers  ,context: ({ req }) => ({ req })});
 
   await server.start();
 

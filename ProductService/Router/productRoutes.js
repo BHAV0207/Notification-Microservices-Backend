@@ -4,6 +4,7 @@ const Product = require("../Models/productModels");
 const {connectConsumer} = require("../kafka");
 const { producer } = require("../kafka");
 const redis = require("../redisClient");
+const authMiddleware = require("../MiddleWare/authMiddleware");
 
 
 connectConsumer("order_created", async (message) => {
@@ -36,7 +37,7 @@ connectConsumer("order_created", async (message) => {
 
 
 // ✅ Create a new product
-router.post("/create", async (req, res) => {
+router.post("/create",authMiddleware, async (req, res) => {
   const { name, price, stock, category, description } = req.body;
   try {
     const product = await Product.create({
@@ -95,7 +96,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // ✅ Update a product by ID
-router.put("/:id", async (req, res) => {
+router.put("/:id",authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { name, price, stock, category, description } = req.body;
   try {
@@ -114,7 +115,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // ✅ Delete a product by ID
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware ,async (req, res) => {
   const { id } = req.params;
   try {
     const product = await Product.findByIdAndDelete(id);

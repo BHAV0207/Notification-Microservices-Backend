@@ -8,9 +8,19 @@ const NOTIFICATION_SERVICE_URL = "http://notification-service:8003";
 
 const resolver = {
   Query: {
-    getUser: async (_, { id }) => {
+    getUser: async (_, { id }, { req }) => {
       try {
-        const res = await axios.get(`${USER_SERVICE_URL}/user/${id}`);
+        const token = req.headers.authorization; // Extract token from request headers
+        if (!token) {
+          throw new Error("Authorization token is missing");
+        }
+
+        const res = await axios.get(`${USER_SERVICE_URL}/user/${id}`, {
+          headers: {
+            Authorization: token, // Pass token in request headers
+          },
+        });
+
         const user = res.data;
         return {
           id: user._id,
@@ -19,7 +29,8 @@ const resolver = {
           preferences: user.preferences,
         };
       } catch (error) {
-        throw new Error("user not found");
+        console.error("Error fetching user:", error.message);
+        throw new Error("User not found or authentication failed");
       }
     },
 
@@ -91,29 +102,28 @@ const resolver = {
         throw new Error("Orders not found");
       }
     },
-      getOrderById: async (_, { id }) => {
-        try {
-          const res = await axios.get(`${ORDER_SERVICE_URL}/order/${id}`);
-          const orders = res.data;
-      
-          // If it's an array, return all orders for a user
-          if (Array.isArray(orders)) {
-            return orders.map(order => ({
-              id: order._id,
-              userId: order.userId,
-              products: order.products.map((product) => ({
-                productId: product.productId,
-                quantity: product.quantity,
-                category: product.category,
-              })),
-            }));
-          }
-        } catch (error) {
-          console.error("❌ Error fetching order:", error.message);
-          throw new Error("Order not found");
+    getOrderById: async (_, { id }) => {
+      try {
+        const res = await axios.get(`${ORDER_SERVICE_URL}/order/${id}`);
+        const orders = res.data;
+
+        // If it's an array, return all orders for a user
+        if (Array.isArray(orders)) {
+          return orders.map((order) => ({
+            id: order._id,
+            userId: order.userId,
+            products: order.products.map((product) => ({
+              productId: product.productId,
+              quantity: product.quantity,
+              category: product.category,
+            })),
+          }));
         }
-      },
-      
+      } catch (error) {
+        console.error("❌ Error fetching order:", error.message);
+        throw new Error("Order not found");
+      }
+    },
 
     notifications: async (_, { userId }) => {
       try {
@@ -211,40 +221,33 @@ const resolver = {
         throw new Error("Failed to update preferences");
       }
     },
-
-    createProduct: async (_, { name, price, stock, category, description }) => {
-      try {
-        const res = await axios.post(`${PRODUCT_SERVICE_URL}/product/create`, {
-          name,
-          price,
-          stock,
-          category,
-          description,
-        });
-        return {
-          id: res.data.product._id,
-          name: res.data.product.name,
-          price: res.data.product.price,
-          stock: res.data.product.stock,
-          category: res.data.product.category,
-          description: res.data.product.description,
-        };
-      } catch (error) {
-        throw new Error("Product creation failed");
-      }
-    },
-    updateProduct: async (
+    createProduct: async (
       _,
-      { id, name, price, stock, category, description }
+      { name, price, stock, category, description },
+      { req }
     ) => {
       try {
-        const res = await axios.put(`${PRODUCT_SERVICE_URL}/product/${id}`, {
-          name,
-          price,
-          stock,
-          category,
-          description,
-        });
+        const token = req.headers.authorization; // Extract token from request headers
+        if (!token) {
+          throw new Error("Authorization token is missing");
+        }
+
+        const res = await axios.post(
+          `${PRODUCT_SERVICE_URL}/product/create`,
+          {
+            name,
+            price,
+            stock,
+            category,
+            description,
+          },
+          {
+            headers: {
+              Authorization: token, // Pass token in request headers
+            },
+          }
+        );
+
         return {
           id: res.data.product._id,
           name: res.data.product.name,
@@ -254,20 +257,69 @@ const resolver = {
           description: res.data.product.description,
         };
       } catch (error) {
-        throw new Error("Product update failed");
+        console.error("Error creating product:", error.message);
+        throw new Error("Product creation failed or unauthorized");
       }
     },
-    deleteProduct: async (_, { id }) => {
+    updateProduct: async (_, { id, name, price, stock, category, description }, { req }) => {
       try {
-        await axios.delete(`${PRODUCT_SERVICE_URL}/product/${id}`);
-        return "Product deleted successfully";
+        const token = req.headers.authorization;
+        if (!token) {
+          throw new Error("Authorization token is missing");
+        }
+    
+        const res = await axios.put(
+          `${PRODUCT_SERVICE_URL}/product/${id}`,
+          {
+            name,
+            price,
+            stock,
+            category,
+            description,
+          },
+          {
+            headers: {
+              Authorization: token, // Pass token in request headers
+            },
+          }
+        );
+    
+        return {
+          id: res.data.product._id,
+          name: res.data.product.name,
+          price: res.data.product.price,
+          stock: res.data.product.stock,
+          category: res.data.product.category,
+          description: res.data.product.description,
+        };
       } catch (error) {
-        throw new Error("Failed to delete product");
+        console.error("Error updating product:", error.message);
+        throw new Error("Product update failed or unauthorized");
       }
     },
+
+ deleteProduct: async (_, { id }, { req }) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      throw new Error("Authorization token is missing");
+    }
+
+    await axios.delete(`${PRODUCT_SERVICE_URL}/product/${id}`, {
+      headers: {
+        Authorization: token, // Pass token in request headers
+      },
+    });
+
+    return "Product deleted successfully";
+  } catch (error) {
+    console.error("Error deleting product:", error.message);
+    throw new Error("Failed to delete product or unauthorized");
+  }
+},
+
 
     createOrder: async (_, { userId, products }) => {
-
       try {
         const res = await axios.post(`${ORDER_SERVICE_URL}/order/create`, {
           userId,

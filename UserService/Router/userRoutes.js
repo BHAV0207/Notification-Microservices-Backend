@@ -113,7 +113,7 @@ router.get("/all", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id",authMiddleware , async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     res.json(user);
